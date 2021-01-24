@@ -8,7 +8,7 @@ Description: >
 #####  Globals for Lambda functions #####
 Globals:
   Function:
-    Timeout: 5
+    Timeout: 500
     Environment:
       Variables:
         Region: "eu-west-1"
@@ -32,24 +32,154 @@ Mappings:
 
 #####  Template Conditions #####
 Conditions:
-  CreateSandboxResources: !Equals [!Ref Stage, sandbox]
+  CreateSandboxResources: !Equals [ !Ref Stage, sandbox ]
 
 Resources:
   #####  Lambda Functions #####
-  HelloWorldFunction:
+  initStreamFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: cmd/lambdas/hello-world/app.lambdaHandler
+      Handler: cmd/lambdas/init-stream/app.lambdaHandler
       CodeUri: src/
       Runtime: nodejs12.x
+      Policies:
+        - Statement:
+            - Sid: mediaPackagePolicy1
+              Effect: Allow
+              Action:
+                - mediaPackage:*
+              Resource: 'arn:aws:mediapackage:*:*:*'
+            - Sid: mediaPackagePolicy2
+              Effect: Allow
+              Action:
+                - mediaPackage:*
+              Resource: 'arn:aws:mediapackage:*:*:*/*'
+            - Sid: ssmParamterPolicy
+              Effect: Allow
+              Action:
+                - ssm:*
+              Resource: 'arn:aws:ssm:*:*:*/*'
+            - Sid: medaliveParamterPolicy
+              Effect: Allow
+              Action:
+                - medialive:*
+              Resource: 'arn:aws:medialive:*:*:*'
+            - Sid: medaliveParamterPolicy2
+              Effect: Allow
+              Action:
+                - medialive:*
+              Resource: 'arn:aws:medialive:eu-west-1:837082807967:channel:*'
+            - Sid: iamParamterPolicy
+              Effect: Allow
+              Action:
+                - iam:PassRole
+              Resource: 'arn:aws:iam::837082807967:role/MediaLiveAccessRole'
       Events:
         CatchAll:
           Type: Api
           Properties:
-            Path: /hello-world
+            Path: /init-stream/{id}
             Method: GET
 
+  startStreamFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: cmd/lambdas/start-stream/app.lambdaHandler
+      CodeUri: src/
+      Runtime: nodejs12.x
+      Policies:
+        - Statement:
+            - Sid: mediaPackagePolicy1
+              Effect: Allow
+              Action:
+                - mediaPackage:*
+              Resource: 'arn:aws:mediapackage:*:*:*'
+            - Sid: mediaPackagePolicy2
+              Effect: Allow
+              Action:
+                - mediaPackage:*
+              Resource: 'arn:aws:mediapackage:*:*:*/*'
+            - Sid: ssmParamterPolicy
+              Effect: Allow
+              Action:
+                - ssm:*
+              Resource: 'arn:aws:ssm:*:*:*/*'
+            - Sid: medaliveParamterPolicy
+              Effect: Allow
+              Action:
+                - medialive:*
+              Resource: 'arn:aws:medialive:*:*:*'
+            - Sid: medaliveParamterPolicy2
+              Effect: Allow
+              Action:
+                - medialive:*
+              Resource: 'arn:aws:medialive:eu-west-1:837082807967:channel:*'
+            - Sid: iamParamterPolicy
+              Effect: Allow
+              Action:
+                - iam:PassRole
+              Resource: 'arn:aws:iam::837082807967:role/MediaLiveAccessRole'
+      Events:
+        CatchAll:
+          Type: Api
+          Properties:
+            Path: /start-stream
+            Method: POST
+
+  StopStreamFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: cmd/lambdas/stop-stream/app.lambdaHandler
+      CodeUri: src/
+      Runtime: nodejs12.x
+      Policies:
+        - Statement:
+            - Sid: mediaPackagePolicy1
+              Effect: Allow
+              Action:
+                - mediaPackage:*
+              Resource: 'arn:aws:mediapackage:*:*:*'
+            - Sid: mediaPackagePolicy2
+              Effect: Allow
+              Action:
+                - mediaPackage:*
+              Resource: 'arn:aws:mediapackage:*:*:*/*'
+            - Sid: ssmParamterPolicy
+              Effect: Allow
+              Action:
+                - ssm:*
+              Resource: 'arn:aws:ssm:*:*:*/*'
+            - Sid: medaliveParamterPolicy
+              Effect: Allow
+              Action:
+                - medialive:*
+              Resource: 'arn:aws:medialive:*:*:*'
+            - Sid: medaliveParamterPolicy2
+              Effect: Allow
+              Action:
+                - medialive:*
+              Resource: 'arn:aws:medialive:eu-west-1:837082807967:channel:*'
+            - Sid: iamParamterPolicy
+              Effect: Allow
+              Action:
+                - iam:PassRole
+              Resource: 'arn:aws:iam::837082807967:role/MediaLiveAccessRole'
+      Events:
+        CatchAll:
+          Type: Api
+          Properties:
+            Path: /stop-stream
+            Method: POST
+
+
+  
 Outputs:
-  HelloWorldApi:
+  InitStreamApi:
     Description: "API Gateway endpoint URL to print Hello, World!"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello-world/"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/init-stream/{id}"
+  StartStreamApi:
+    Description: "API Gateway endpoint URL to print Hello, World!"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/start-stream/"
+  StopStreamApi:
+    Description: "API Gateway endpoint URL to print Hello, World!"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/stop-stream/"
