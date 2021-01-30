@@ -1,9 +1,10 @@
-# Node.js + AWS SAM bootstrap
+# Prototype for creating live streaming service on aws
 
-Bootstrap project to quickly kick off your serverless projects running with Node.js and AWS SAM framework.
+A prototype for creating a serverless live streaming service using aws resources
 
 Features:
-* Type checking and compilation for TypeScript code
+
+- Type checking and compilation for TypeScript code
 
 ## How to use this repo
 
@@ -16,56 +17,67 @@ This will create a new repository using this one.
 
 ### Prerequisites
 
-* [NodeJS version 12 or later](https://nodejs.org/en/download/) - or use [nvm](https://github.com/nvm-sh/nvm)
-* [Docker](https://docs.docker.com/install)
-* [AWS Command Line Interface](https://docs.aws.amazon.com/cli/latest/userguide/installing.html)
-* [SAM CLI](https://aws.amazon.com/serverless/sam/)
+- [NodeJS version 12 or later](https://nodejs.org/en/download/) - or use [nvm](https://github.com/nvm-sh/nvm)
+- [Docker](https://docs.docker.com/install)
+- [AWS Command Line Interface](https://docs.aws.amazon.com/cli/latest/userguide/installing.html)
+- [SAM CLI](https://aws.amazon.com/serverless/sam/)
 
 ### Project Configuration
 
 - Copy the `configs/.env.example` variable file to `configs/.env` and change the project name, username, aws profile.
+
 ```
 cp configs/.env.example configs/.env
 ```
 
 ### Project Setup
+
 - Go to AWS console -> IAM -> Users -> Create, and create new user with programmatic access.
 
 - Run the following commands, and use the IAM key / secret you generated.
+
 ```
 make setup
 ```
 
 ### Docker container build
+
 ```
 make docker-build
 ```
 
 ### Install NodeJS dependencies
+
 ```
 make install
 ```
 
 ### Local Development
+
 To invoke the function locally through API Gateway
+
 ```
 make run
 ```
+
 When this command runs successfully, you will see the endpoints you can invoke
 
-
 ### AWS Deployment
+
 To deploy the application to your aws account, invoke the following command
+
 ```
 make deploy
 ```
 
 - The default profile for deploy command is the aws profile in your .env, You can override it as follow:
+
 ```
 make deploy STAGE=staging
 ```
 
 ## Make targets
+
 ```
 help            Prints this help screen
 setup           Create the s3 bucket that will host the artifcats in aws environment

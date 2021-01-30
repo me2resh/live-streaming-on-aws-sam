@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Prototype for creating live streaming service on aws",
   "repository": "https://github.com/me2resh/live-streaming-on-aws.git",
-  "author": "Me2resh",
+  "author": "Zava",
   "dependencies": {
     "@types/aws-sdk": "^2.7.0",
     "@types/psl": "^1.1.0",
