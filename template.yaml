@@ -68,17 +68,25 @@ Resources:
               Effect: Allow
               Action:
                 - medialive:*
-              Resource: 'arn:aws:medialive:eu-west-1:837082807967:channel:*'
-            - Sid: iamParamterPolicy
+              Resource: { "Fn::Sub": "arn:aws:medialive:${AWS::Region}:${AWS::AccountId}:channel:*" }
+            - Sid: iamPolicy
               Effect: Allow
               Action:
                 - iam:PassRole
-              Resource: 'arn:aws:iam::837082807967:role/MediaLiveAccessRole'
+              Resource: { "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:role/MediaLiveAccessRole" }
+            - Sid: cloudFrontPolicy
+              Effect: Allow
+              Action:
+                - cloudfront:CreateDistribution
+              Resource: { "Fn::Sub": "arn:aws:cloudfront::${AWS::AccountId}:distribution/*" }
       Events:
         CatchAll:
           Type: Api
           Properties:
             Path: /init-stream/{id}
+            RestApiId: !Ref StreamingApi
+            Auth:
+              ApiKeyRequired: true
             Method: GET
 
   startStreamFunction:
@@ -113,18 +121,68 @@ Resources:
               Effect: Allow
               Action:
                 - medialive:*
-              Resource: 'arn:aws:medialive:eu-west-1:837082807967:channel:*'
+              Resource: { "Fn::Sub": "arn:aws:medialive:${AWS::Region}:${AWS::AccountId}:channel:*" }
             - Sid: iamParamterPolicy
               Effect: Allow
               Action:
                 - iam:PassRole
-              Resource: 'arn:aws:iam::837082807967:role/MediaLiveAccessRole'
+              Resource: { "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:role/MediaLiveAccessRole" }
       Events:
         CatchAll:
           Type: Api
           Properties:
             Path: /start-stream
             Method: POST
+            RestApiId: !Ref StreamingApi
+            Auth:
+              ApiKeyRequired: true
+  cleanupStreamsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: cmd/lambdas/cleanup-streams/app.lambdaHandler
+      CodeUri: src/
+      Runtime: nodejs12.x
+      Policies:
+        - Statement:
+            - Sid: mediaPackagePolicy1
+              Effect: Allow
+              Action:
+                - mediaPackage:*
+              Resource: 'arn:aws:mediapackage:*:*:*'
+            - Sid: mediaPackagePolicy2
+              Effect: Allow
+              Action:
+                - mediaPackage:*
+              Resource: 'arn:aws:mediapackage:*:*:*/*'
+            - Sid: ssmParamterPolicy
+              Effect: Allow
+              Action:
+                - ssm:*
+              Resource: 'arn:aws:ssm:*:*:*/*'
+            - Sid: medaliveParamterPolicy
+              Effect: Allow
+              Action:
+                - medialive:*
+              Resource: 'arn:aws:medialive:*:*:*'
+            - Sid: medaliveParamterPolicy2
+              Effect: Allow
+              Action:
+                - medialive:*
+              Resource: { "Fn::Sub": "arn:aws:medialive:${AWS::Region}:${AWS::AccountId}:channel:*" }
+            - Sid: iamParamterPolicy
+              Effect: Allow
+              Action:
+                - iam:PassRole
+              Resource: { "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:role/MediaLiveAccessRole" }
+      Events:
+        CatchAll:
+          Type: Api
+          Properties:
+            Path: /cleanup-streams
+            Method: GET
+            RestApiId: !Ref StreamingApi
+            Auth:
+              ApiKeyRequired: true
 
   StopStreamFunction:
     Type: AWS::Serverless::Function
@@ -158,28 +216,68 @@ Resources:
               Effect: Allow
               Action:
                 - medialive:*
-              Resource: 'arn:aws:medialive:eu-west-1:837082807967:channel:*'
+              Resource: { "Fn::Sub": "arn:aws:medialive:${AWS::Region}:${AWS::AccountId}:channel:*" }
             - Sid: iamParamterPolicy
               Effect: Allow
               Action:
                 - iam:PassRole
-              Resource: 'arn:aws:iam::837082807967:role/MediaLiveAccessRole'
+              Resource: { "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:role/MediaLiveAccessRole" }
       Events:
         CatchAll:
           Type: Api
           Properties:
             Path: /stop-stream
             Method: POST
+            RestApiId: !Ref StreamingApi
+            Auth:
+              ApiKeyRequired: true
 
+  LiveStreamApiKey:
+    Type: "AWS::ApiGateway::ApiKey"
+    DependsOn:
+      - StreamingApi
+    Properties:
+      Description: Api Key to Use Live streaming
+      Enabled: true
+      Name: LiveStreamKey
 
-  
+  ApiKeyUsagePlanKey:
+    Type: "AWS::ApiGateway::UsagePlanKey"
+    Properties:
+      KeyId: !Ref LiveStreamApiKey
+      KeyType: API_KEY
+      UsagePlanId: !Ref ApiKeyUsagePlan
+
+  ApiKeyUsagePlan:
+    Type: "AWS::ApiGateway::UsagePlan"
+    DependsOn:
+      - StreamingApiProdStage
+    Properties:
+      ApiStages:
+        - ApiId: !Ref StreamingApi
+          Stage: Prod
+      Description: API Key General Usage Plan
+      Throttle:
+        BurstLimit: 300
+        RateLimit: 200
+      UsagePlanName: Streaming_API_UsagePlan
+
+  StreamingApi:
+    Type: "AWS::Serverless::Api"
+    Properties:
+      StageName: Prod
+      TracingEnabled: true
+
 Outputs:
   InitStreamApi:
     Description: "API Gateway endpoint URL to print Hello, World!"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/init-stream/{id}"
+    Value: !Sub "https://${StreamingApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/init-stream/{id}"
   StartStreamApi:
     Description: "API Gateway endpoint URL to print Hello, World!"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/start-stream/"
+    Value: !Sub "https://${StreamingApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/start-stream/"
   StopStreamApi:
     Description: "API Gateway endpoint URL to print Hello, World!"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/stop-stream/"
+    Value: !Sub "https://${StreamingApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/stop-stream/"
+  cleanupStreamsApi:
+    Description: "API Gateway endpoint URL to print Hello, World!"
+    Value: !Sub "https://${StreamingApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/cleanup-streams/"

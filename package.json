@@ -1,13 +1,15 @@
 {
-  "name": "nodejs-sam-bootstrap",
+  "name": "live-streaming-on-aws",
   "version": "1.0.0",
-  "description": "Cloneable bootstrap for AWS SAM and NodeJS setup",
-  "repository": "https://github.com/healthbridgeltd/nodejs-sam-bootstrap/",
-  "author": "Zava",
+  "description": "Prototype for creating live streaming service on aws",
+  "repository": "https://github.com/me2resh/live-streaming-on-aws.git",
+  "author": "Me2resh",
   "dependencies": {
     "@types/aws-sdk": "^2.7.0",
+    "@types/psl": "^1.1.0",
     "aws-lambda": "^1.0.6",
     "aws-sdk": "^2.787.0",
+    "psl": "^1.8.0",
     "source-map-support": "0.5.19"
   },
   "scripts": {
