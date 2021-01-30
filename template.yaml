@@ -2,8 +2,7 @@ AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: >
 
-  nodejs-sam-bootstrap
-  SAM Template for nodejs-sam-bootstrap
+  live-streaming-on-aws
 
 #####  Globals for Lambda functions #####
 Globals:
@@ -151,10 +150,10 @@ Resources:
             RestApiId: !Ref StreamingApi
             Auth:
               ApiKeyRequired: true
-  cleanupStreamsFunction:
+  listStreamsFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: cmd/lambdas/cleanup-streams/app.lambdaHandler
+      Handler: cmd/lambdas/list-streams/app.lambdaHandler
       CodeUri: src/
       Runtime: nodejs12.x
       Policies:
@@ -199,7 +198,7 @@ Resources:
         CatchAll:
           Type: Api
           Properties:
-            Path: /cleanup-streams
+            Path: /list-streams
             Method: GET
             RestApiId: !Ref StreamingApi
             Auth:
@@ -305,6 +304,6 @@ Outputs:
   StopStreamApi:
     Description: 'API Gateway endpoint URL to print Hello, World!'
     Value: !Sub 'https://${StreamingApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/stop-stream/'
-  cleanupStreamsApi:
+  listStreamsApi:
     Description: 'API Gateway endpoint URL to print Hello, World!'
-    Value: !Sub 'https://${StreamingApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/cleanup-streams/'
+    Value: !Sub 'https://${StreamingApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/list-streams/'
